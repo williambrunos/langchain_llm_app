@@ -1,12 +1,15 @@
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+from langchain.agents import load_tools
+from langchain.agents import initialize_agent
+from langchain.agents import AgentType
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def generate_pet_name(animal_type, animal_color):
-    llm = OpenAI(temperature=0.5)
+    llm = OpenAI(temperature=0.7)
     
     PROMPT = """
     I have a {animal_color} {animal_type} pet and want to give it a name.
@@ -29,6 +32,18 @@ def generate_pet_name(animal_type, animal_color):
     
     return pet_name
 
-
-if __name__ == '__main__':
-    print(generate_pet_name(animal_type="bear", animal_color="white"))
+def langchain_agent():
+    llm = OpenAI(temperature=0.7)
+    
+    tool_set = ['wikipedia', 'llm-math']
+    tools = load_tools(tool_names=tool_set, llm=llm)
+    
+    agent = initialize_agent(
+        tools=tools, 
+        llm=llm, 
+        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, 
+        verbose=True
+    )
+    result = agent.run("What is the average age of a dog? Multiply the result by 3")
+    
+    return result
